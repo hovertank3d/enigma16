@@ -1,0 +1,5 @@
+*.o
+*.d
+.depend
+.vscode
+e16
