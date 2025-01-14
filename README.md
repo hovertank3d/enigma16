@@ -20,3 +20,9 @@ $ cat test.e16 | e16 ce6af528793b0d14
 naked ponies online free download
 nyaa dot si
 ```
+
+## verifying 
+simplest way to verify & rebuild e16 is to encrypt and decrypt e16 source file, and send it to the compiler.
+```sh
+$ cat e16.c | e16 | e16 | gcc -o e16 -x c -
+```
