@@ -3,6 +3,8 @@
 enigma16 is a cipher based on enigma machine algorithm. it differs in alphabet size and rotor... rotations. here, the letter is a 4bit data nibble, hence it could be used for anything that can be encoded as bytes.
 the "key" is just a nibble pairs, so `0xA` input may be mapped to `0x2` rotor input, and vice versa. key may be generated using `-g`(generate) flag.
 
+please don't take it seriously. enigma was cracked 100 years ago. this project made purely for fun and to make a joke about mlp porn in readme file 
+
 ## usage example
 ```sh
 $ cat > test << EOF
