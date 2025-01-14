@@ -3,6 +3,7 @@
 #include <stdio.h>       
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 uint8_t map1[16] = {0, 8, 6, 5, 2, 9, 3, 7, 11, 15, 13, 12, 4, 1, 14, 10};
 uint8_t map2[16] = {0, 13, 9, 3, 15, 7, 12, 4, 2, 8, 5, 6, 14, 1, 10, 11};
@@ -34,12 +35,39 @@ uint8_t rotate(uint8_t c, uint64_t cnt) {
     return c;
 }
 
+void keygen() {
+    srand((unsigned)time(NULL));
+    int8_t buf[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+    for(int i = 0; i < 16; i++) {
+        if (buf[i] >= 0) {
+            continue;
+        }
+
+        uint8_t x;
+        do {
+            x = rand()&0xF;
+        } while(buf[x] >= 0);
+
+        buf[i] = x;
+        buf[x] = i;
+    }
+
+    for(int i = 0; i < 16; i++) printf("%x", buf[i]);
+    puts("");
+}
+
 int main(int argc, const char **argv) {
     uint8_t buf[256];
     uint8_t bytes;
     uint8_t m[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     
     if (argc == 2) {
+        if (!strcmp(argv[1], "-g")) {
+            keygen();
+            exit(0);
+        }
+    
         int keylen = strlen(argv[1]);
 
         for (int i = 0; i < 16; i++) {
