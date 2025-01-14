@@ -19,45 +19,25 @@ uint8_t rotate(uint8_t c, uint64_t cnt) {
     uint8_t c_rotated;
     uint8_t c_out;
 
-    c_in = (c + cnt) % 16;
-    c_rotated = map1[c_in];
-    c_out = (c_rotated - cnt) % 16;
+    uint64_t cnt1 = cnt;
+    uint64_t cnt2 = cnt>>2;
+    uint64_t cnt3 = cnt>>4;
 
-    c_in = (c_out + (cnt>>2)) % 16;
-    c_rotated = map2[c_in];
-    c_out = (c_rotated - (cnt>>2)) % 16;
+    c = (map1[(c + cnt1)&0xf] - cnt1)&0xf;
+    c = (map2[(c + cnt2)&0xf] - cnt2)&0xf;
+    c = (map3[(c + cnt3)&0xf] - cnt3)&0xf;
+    c = rmap[c&0xf];
+    c = (map3r[(c + cnt3)&0xf] - cnt3)&0xf;
+    c = (map2r[(c + cnt2)&0xf] - cnt2)&0xf;
+    c = (map1r[(c + cnt1)&0xf] - cnt1)&0xf;
 
-    c_in = (c_out + (cnt>>4)) % 16;
-    c_rotated = map3[c_in];
-    c_out = (c_rotated - (cnt>>4)) % 16;
-
-    c_out = rmap[c_out];
-
-    c_in = (c_out - (cnt>>4)) % 16;
-    c_rotated = map3r[c_in];
-    c_out = (c_rotated + (cnt>>4)) % 16;
-
-    c_in = (c_out - (cnt>>2)) % 16;
-    c_rotated = map2r[c_in];
-    c_out = (c_rotated + (cnt>>2)) % 16;
-
-    c_in = (c_out - (cnt)) % 16;
-    c_rotated = map1r[c_in];
-    c_out = (c_rotated + (cnt)) % 16;
-
-    return c_out;
+    return c;
 }
 
 int main(int argc, const char **argv) {
     uint8_t buf[256];
     uint8_t bytes;
     uint8_t m[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    
-    FILE *stdin_bin = freopen(NULL, "rb", stdin);
-    FILE *stdout_bin = freopen(NULL, "wb", stdout);
-    if (stdin_bin == NULL || stdout_bin == NULL) {
-        perror("freopen");
-    }
     
     if (argc == 2) {
         int keylen = strlen(argv[1]);
@@ -89,14 +69,14 @@ int main(int argc, const char **argv) {
 
     uint64_t cnt = 0;
 
-    while ((bytes = fread(buf, 1, 256, stdin_bin)) && bytes > 0) {
+    while ((bytes = read(STDIN_FILENO, buf, 1)) && bytes) {
         for (int i = 0; i < bytes; i++) {
-            uint8_t n1 = m[rotate(m[buf[i] & 0xF], cnt)];
-            uint8_t n2 = m[rotate(m[buf[i] >> 4] , cnt)];
+            uint8_t n1 = m[rotate(m[buf[i] & 0xF], cnt++)];
+            uint8_t n2 = m[rotate(m[buf[i] >> 4] , cnt++)];
 
             buf[i] = n1 | (n2 << 4);
         }
 
-        fwrite(buf, 1, bytes, stdout_bin);
+        write(STDOUT_FILENO, buf, bytes);
     }
 }
