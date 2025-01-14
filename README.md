@@ -10,13 +10,14 @@ naked ponies online free download
 nyaa dot si
 EOF
 
-$ cat test | e16 ce6af528793b0d14 > test.e16
+# -h flag tells e16 to output data as plaintext hex
+$ cat test | e16 ce6af528793b0d14 -h > test.e16
 
 $ cat test.e16 
-�4M�%[<J!�:�D�+ʖ7f���Җ�6�1���>��KH�
-                                   �
+6775941c7c164f573e03e5e825749a947495a3e119ab80a8fec7389612b922ccd821fd0a4f3126c5dced131dccf4
 
-$ cat test.e16 | e16 ce6af528793b0d14
+# -x flags tells e16 that input is plantext hex
+$ cat test.e16 | e16 ce6af528793b0d14 -x
 naked ponies online free download
 nyaa dot si
 ```
