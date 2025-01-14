@@ -5,35 +5,78 @@
 #include <string.h>
 #include <time.h>
 
-uint8_t map1[16] = {0, 8, 6, 5, 2, 9, 3, 7, 11, 15, 13, 12, 4, 1, 14, 10};
-uint8_t map2[16] = {0, 13, 9, 3, 15, 7, 12, 4, 2, 8, 5, 6, 14, 1, 10, 11};
-uint8_t map3[16] = {0, 8, 7, 14, 5, 3, 2, 12, 9, 10, 11, 15, 1, 13, 4, 6};
+uint8_t maps[][16] = {{0xa, 0x1, 0xb, 0x6, 0x3, 0xe, 0x5, 0xd, 0x4, 0x7, 0x0, 0x9, 0x8, 0xc, 0xf, 0x2},
+                      {0x2, 0x1, 0x7, 0xb, 0xc, 0x4, 0xa, 0x6, 0x5, 0x3, 0x9, 0xe, 0x8, 0xf, 0x0, 0xd},
+                      {0xe, 0xf, 0x8, 0x3, 0xb, 0x9, 0xc, 0x1, 0x5, 0xa, 0x7, 0x2, 0x0, 0xd, 0x6, 0x4},
+                      {0xf, 0x9, 0xe, 0xd, 0xc, 0x5, 0x6, 0x4, 0x0, 0x2, 0x8, 0x7, 0x1, 0x3, 0xa, 0xb},
+                      {0x9, 0x7, 0x2, 0x0, 0x1, 0xa, 0xc, 0xe, 0x4, 0xb, 0xf, 0x6, 0x5, 0x8, 0x3, 0xd},
+                      {0x9, 0x4, 0x8, 0xb, 0x2, 0xc, 0xe, 0x0, 0x5, 0x6, 0x3, 0xa, 0xf, 0x1, 0xd, 0x7},
+                      {0x6, 0x1, 0x2, 0xd, 0x7, 0x0, 0x5, 0x9, 0xf, 0xc, 0xa, 0xb, 0xe, 0x3, 0x4, 0x8},
+                      {0x5, 0xa, 0xf, 0x2, 0x6, 0x7, 0xd, 0xe, 0xc, 0x1, 0x8, 0x9, 0x0, 0x3, 0x4, 0xb},};
 
-uint8_t map1r[16] = {0, 13, 4, 6, 12, 3, 2, 7, 1, 5, 15, 8, 11, 10, 14, 9};
-uint8_t map2r[16] = {0, 13, 8, 3, 7, 10, 11, 5, 9, 2, 14, 15, 6, 1, 12, 4};
-uint8_t map3r[16] = {0, 12, 6, 5, 14, 4, 15, 2, 1, 8, 9, 10, 7, 13, 3, 11};
+uint8_t maps_rev[][16] = {{0xa, 0x1, 0xf, 0x4, 0x8, 0x6, 0x3, 0x9, 0xc, 0xb, 0x0, 0x2, 0xd, 0x7, 0x5, 0xe},
+                          {0xe, 0x1, 0x0, 0x9, 0x5, 0x8, 0x7, 0x2, 0xc, 0xa, 0x6, 0x3, 0x4, 0xf, 0xb, 0xd},
+                          {0xc, 0x7, 0xb, 0x3, 0xf, 0x8, 0xe, 0xa, 0x2, 0x5, 0x9, 0x4, 0x6, 0xd, 0x0, 0x1},
+                          {0x8, 0xc, 0x9, 0xd, 0x7, 0x5, 0x6, 0xb, 0xa, 0x1, 0xe, 0xf, 0x4, 0x3, 0x2, 0x0},
+                          {0x3, 0x4, 0x2, 0xe, 0x8, 0xc, 0xb, 0x1, 0xd, 0x0, 0x5, 0x9, 0x6, 0xf, 0x7, 0xa},
+                          {0x7, 0xd, 0x4, 0xa, 0x1, 0x8, 0x9, 0xf, 0x2, 0x0, 0xb, 0x3, 0x5, 0xe, 0x6, 0xc},
+                          {0x5, 0x1, 0x2, 0xd, 0xe, 0x6, 0x0, 0x4, 0xf, 0x7, 0xa, 0xb, 0x9, 0x3, 0xc, 0x8},
+                          {0xc, 0x9, 0x3, 0xd, 0xe, 0x0, 0x4, 0x5, 0xa, 0xb, 0x1, 0xf, 0x8, 0x6, 0x7, 0x2}};
 
 uint8_t rmap[16] = {13, 11, 14, 8, 9, 15, 12, 10, 3, 4, 7, 1, 6, 0, 2, 5};
 
 uint8_t rotate(uint8_t c, uint64_t cnt) {
-    uint8_t c_in = c; 
-    uint8_t c_rotated;
-    uint8_t c_out;
-
-    uint64_t cnt1 = cnt;
-    uint64_t cnt2 = cnt>>2;
-    uint64_t cnt3 = cnt>>4;
-
-    c = (map1[(c + cnt1)&0xf] - cnt1)&0xf;
-    c = (map2[(c + cnt2)&0xf] - cnt2)&0xf;
-    c = (map3[(c + cnt3)&0xf] - cnt3)&0xf;
+    int i = 0;
+    
+    for (; i < 8; i++) {
+        uint64_t shifted = (cnt >> (2*i)); 
+        c = (maps[i][(c+shifted)&0xf]-shifted)&0xf;
+    }
     c = rmap[c&0xf];
-    c = (map3r[(c + cnt3)&0xf] - cnt3)&0xf;
-    c = (map2r[(c + cnt2)&0xf] - cnt2)&0xf;
-    c = (map1r[(c + cnt1)&0xf] - cnt1)&0xf;
-
+    for (--i; i >= 0; i--) {
+        uint64_t shifted = (cnt >> (2*i)); 
+        c = (maps_rev[i][(c+shifted)&0xf]-shifted)&0xf;
+    }
     return c;
 }
+
+void rotgen() {
+    srand((unsigned)time(NULL));
+    int8_t buf[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    int8_t rbuf[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+    uint8_t x;
+ 
+    for(int i = 0; i < 16; ) {
+        x = rand()%16;
+        int free = 1;
+
+        for (int j = 0; j < i; j++)
+            if (buf[j] == x) {
+                free = 0;
+                break;
+            }
+
+        if (free) {
+            buf[i] = x;
+            rbuf[x] = i;
+            i++;
+            continue;
+        }
+   }
+
+    
+    printf("{0x%x", buf[0]);
+    for (int i = 1; i < 16; i++)
+        printf(", 0x%x", buf[i]); 
+    puts("}");
+
+    printf("{0x%x", rbuf[0]);
+    for (int i = 1; i < 16; i++)
+        printf(", 0x%x", rbuf[i]); 
+    puts("}");
+}
+
 
 void keygen() {
     srand((unsigned)time(NULL));
@@ -58,18 +101,28 @@ void keygen() {
 }
 
 int main(int argc, const char **argv) {
-    uint8_t buf[256];
+    uint8_t buf[2];
     uint8_t bytes;
     uint8_t m[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    
-    if (argc == 2) {
-        if (!strcmp(argv[1], "-g")) {
+    int hex_input = 0, hex_output = 0;
+
+
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-g")) {
             keygen();
             exit(0);
         }
-    
-        int keylen = strlen(argv[1]);
+        if (!strcmp(argv[i], "-r")) {
+            rotgen();
+            exit(0);
+        }
+        if (argv[i][0] == '-') {
+            hex_input  = strchr(argv[i], 'x') != 0;
+            hex_output = strchr(argv[i], 'h') != 0;
+            continue;
+        }
 
+        int keylen = strlen(argv[i]);
         for (int i = 0; i < 16; i++) {
             if (i >= keylen) {
                 m[i] = i;
@@ -96,15 +149,41 @@ int main(int argc, const char **argv) {
     }    
 
     uint64_t cnt = 0;
+    uint8_t  last_nibble;
 
     while ((bytes = read(STDIN_FILENO, buf, 1)) && bytes) {
-        for (int i = 0; i < bytes; i++) {
-            uint8_t n1 = m[rotate(m[buf[i] & 0xF], cnt++)];
-            uint8_t n2 = m[rotate(m[buf[i] >> 4] , cnt++)];
+            uint8_t n1;
+            uint8_t n2;
 
-            buf[i] = n1 | (n2 << 4);
+            if (hex_input) {            
+                uint8_t x = buf[0] >= 'a' &&  buf[0] <= 'f' ? 10 + buf[0]-'a' :
+                            buf[0] >= '0' &&  buf[0] <= '9' ? buf[0] -    '0' :
+                            -1;
+                if (x == -1) {
+                    continue;
+                }
+
+                n1 = m[rotate(m[x], cnt++)];
+            } else {
+                n1 = m[rotate(m[buf[0] & 0xF], cnt++)];
+                n2 = m[rotate(m[buf[0] >> 4] , cnt++)];
+            }
+
+            if (hex_output) {
+                printf("%x", n1);
+                if (!hex_input)
+                    printf("%x", n2); 
+            } else {
+                if (hex_input) {
+                    if ((cnt&1) == 0) {
+                        putc(last_nibble | (n1 << 4), stdout);
+                    } else {
+                        last_nibble = n1;
+                    }
+                    continue;
+                }  
+
+                putc(n1 | (n2 << 4), stdout);
+            }
         }
-
-        write(STDOUT_FILENO, buf, bytes);
-    }
 }
