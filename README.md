@@ -14,7 +14,7 @@ $ cat test | e16 ce6af528793b0d14 > test.e16
 
 $ cat test.e16 
 �4M�%[<J!�:�D�+ʖ7f���Җ�6�1���>��KH�
-                                   �⬢
+                                   �
 
 $ cat test.e16 | e16 ce6af528793b0d14
 naked ponies online free download
