@@ -25,17 +25,21 @@ uint8_t maps_rev[][16] = {{0xa, 0x1, 0xf, 0x4, 0x8, 0x6, 0x3, 0x9, 0xc, 0xb, 0x0
 
 uint8_t rmap[16] = {13, 11, 14, 8, 9, 15, 12, 10, 3, 4, 7, 1, 6, 0, 2, 5};
 
-uint8_t rotate(uint8_t c, uint64_t cnt) {
+uint8_t rotate(uint8_t c, uint64_t cnt, uint64_t hash) {
     int i = 0;
     
     for (; i < 8; i++) {
-        uint64_t shifted = (cnt >> (2*i)); 
-        c = (maps[i][(c+shifted)&0xf]-shifted)&0xf;
+        uint64_t shifted = (cnt >> (4*i));
+        uint8_t hash_offset = (hash >> 4*i) & 0xff; 
+        uint64_t offset = shifted + hash_offset;
+        c = (maps[i][(c+offset)&0xf]-offset)&0xf;
     }
     c = rmap[c&0xf];
     for (--i; i >= 0; i--) {
-        uint64_t shifted = (cnt >> (2*i)); 
-        c = (maps_rev[i][(c+shifted)&0xf]-shifted)&0xf;
+        uint64_t shifted = (cnt >> (4*i));
+        uint8_t hash_offset = (hash >> 4*i) & 0xff; 
+        uint64_t offset = shifted + hash_offset;
+        c = (maps_rev[i][(c+offset)&0xf]-offset)&0xf;
     }
     return c;
 }
@@ -100,12 +104,19 @@ void keygen() {
     puts("");
 }
 
+uint64_t djb2(uint8_t buf[static 16]) {
+    uint64_t hash = 5381;
+    int c;
+    for (int i = 0; i < 8; i++)
+        hash = ((hash << 5) + hash) + (buf[2*i] | (buf[2*i+1] << 4)); /* hash * 33 + c */
+    return hash;
+}
+
 int main(int argc, const char **argv) {
     uint8_t buf[2];
     uint8_t bytes;
     uint8_t m[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     int hex_input = 0, hex_output = 0;
-
 
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-g")) {
@@ -149,6 +160,7 @@ int main(int argc, const char **argv) {
     }    
 
     uint64_t cnt = 0;
+    uint64_t hash = djb2(m);
     uint8_t  last_nibble;
 
     while ((bytes = read(STDIN_FILENO, buf, 1)) && bytes) {
@@ -163,10 +175,10 @@ int main(int argc, const char **argv) {
                     continue;
                 }
 
-                n1 = m[rotate(m[x], cnt++)];
+                n1 = m[rotate(m[x], cnt++, hash)];
             } else {
-                n1 = m[rotate(m[buf[0] & 0xF], cnt++)];
-                n2 = m[rotate(m[buf[0] >> 4] , cnt++)];
+                n1 = m[rotate(m[buf[0] & 0xF], cnt++, hash)];
+                n2 = m[rotate(m[buf[0] >> 4] , cnt++, hash)];
             }
 
             if (hex_output) {
